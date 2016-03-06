@@ -81,7 +81,6 @@ func getSSOToken() string {
             // Receive the code information
             values := r.URL.Query()
             messages <- values.Get("code")
-            close(messages)
 
             // Say thank you
             w.WriteHeader(http.StatusOK)
@@ -107,6 +106,5 @@ func getSSOToken() string {
     if err := json.Unmarshal([]byte(body), &dat); err != nil {
         log.Fatal(err)
     }
-    log.Print(dat)
     return dat["access_token"].(string)
 }
