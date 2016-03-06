@@ -1,21 +1,19 @@
 package esc
 
 import (
-    "bytes"
     "encoding/json"
     "io"
-    "io/ioutil"
     "log"
     "fmt"
     "net"
     "net/http"
-    "net/http/httputil"
     "net/url"
 )
 import (
     "github.com/lxn/walk"
     . "github.com/lxn/walk/declarative"
     "github.com/skratchdot/open-golang/open"
+    "github.com/parnurzeal/gorequest"
 )
 
 const escClientId = "8a9aa2811b064f8cb1d07d37ac519696"
@@ -69,7 +67,6 @@ func getSSOToken() string {
     q.Set("client_id", escClientId)
     q.Set("scope", "characterFittingsWrite")
     u.RawQuery = q.Encode()
-    log.Printf("Opening %s", u)
     open.Run(u.String())
 
     messages := make(chan string)
@@ -80,13 +77,10 @@ func getSSOToken() string {
         if err != nil {
             log.Print(err)
         }
-        log.Printf("Listening on %s", fmt.Sprintf(":%d", ssoServerPort))
         http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
             // Receive the code information
-            log.Printf("Got hit on %s", r.URL)
             values := r.URL.Query()
             messages <- values.Get("code")
-            log.Print("Sent message")
             close(messages)
 
             // Say thank you
@@ -97,45 +91,22 @@ func getSSOToken() string {
         http.Serve(listener, nil)
     }()
 
-    log.Print("Waiting for code")
     code := <-messages
-    log.Printf("Got '%s'", code)
 
     // Go grab the token
 
-    client := &http.Client{}
-    var authReq = []byte("grant_type=authorization_code&code="+code)
-    req, err := http.NewRequest("POST",
-        "https://login.eveonline.com/oauth/token",
-        bytes.NewBuffer(authReq))
-    if err != nil {
-        log.Fatal(err)
+    req := gorequest.New().SetBasicAuth(escClientId, escClientSecret)
+    req.Post("https://login.eveonline.com/oauth/token")
+    req.Send("grant_type=authorization_code&code="+code)
+    _, body, errs := req.End()
+    if errs != nil {
+        log.Print(errs)
     }
-    req.SetBasicAuth(escClientId, escClientSecret)
-    debug(httputil.DumpRequestOut(req, true))
-    resp, err := client.Do(req)
-    if err != nil {
-        log.Fatal(err)
-    }
-    jsonBytes, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        log.Fatal(err)
-    }
-    log.Print(string(jsonBytes))
+
     var dat map[string]interface{}
-    if err := json.Unmarshal(jsonBytes, &dat); err != nil {
+    if err := json.Unmarshal([]byte(body), &dat); err != nil {
         log.Fatal(err)
     }
     log.Print(dat)
-
-    return ""
-}
-
-
-func debug(data []byte, err error) {
-    if err == nil {
-        log.Printf("%s\n\n", data)
-    } else {
-        log.Fatalf("%s\n\n", err)
-    }
+    return dat["access_token"].(string)
 }
