@@ -8,7 +8,7 @@ import (
 
 type CartLine struct {
     Item    string
-    Count   int64
+    Count   int
 }
 
 func parseShoppingList(input string) ([]CartLine, error) {
@@ -27,10 +27,10 @@ func parseShoppingList(input string) ([]CartLine, error) {
         parts[0] = strings.TrimSpace(parts[0])
         parts[1] = strings.TrimSpace(parts[1])
 
-        count, err := strconv.ParseInt(parts[0], 10, 64)
+        count, err := strconv.Atoi(parts[0])
         if err != nil {
             // First arg is not the count
-            count, err := strconv.ParseInt(parts[1], 10, 64)
+            count, err := strconv.Atoi(parts[1])
             if err != nil {
                 // Neither arg is a count, skip this line
                 continue
@@ -43,7 +43,7 @@ func parseShoppingList(input string) ([]CartLine, error) {
             }
         } else {
             // First arg is a count
-            _, err := strconv.ParseInt(parts[1], 10, 64)
+            _, err := strconv.Atoi(parts[1])
             if err != nil {
                 // Count, Item
                 cart = append(cart, CartLine{
