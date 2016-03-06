@@ -28,8 +28,9 @@ func TestNotValidElements(t *testing.T) {
 }
 
 func TestNotValidDoubleCounts(t *testing.T) {
-    _, err := parseShoppingList("1, 2\n3, 4")
+    cart, err := parseShoppingList("1, 2\n3, 4")
     if err == nil {
+        fmt.Printf("Got:\t%v", cart)
         t.Fail()
     }
 }

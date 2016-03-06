@@ -23,31 +23,36 @@ func parseShoppingList(input string) ([]CartLine, error) {
         if len(parts) < 2 {
             continue
         }
-        count, err := strconv.ParseInt(parts[0], 10, 32)
+
+        parts[0] = strings.TrimSpace(parts[0])
+        parts[1] = strings.TrimSpace(parts[1])
+
+        count, err := strconv.ParseInt(parts[0], 10, 64)
         if err != nil {
             // First arg is not the count
-            count, err := strconv.ParseInt(parts[1], 10, 32)
+            count, err := strconv.ParseInt(parts[1], 10, 64)
             if err != nil {
                 // Neither arg is a count, skip this line
                 continue
             } else {
                 // Item, Count
                 cart = append(cart, CartLine{
-                    Item:  strings.TrimSpace(parts[0]),
+                    Item:  parts[0],
                     Count: count,
                 })
             }
         } else {
-            _, err := strconv.ParseInt(parts[1], 10, 32)
+            // First arg is a count
+            _, err := strconv.ParseInt(parts[1], 10, 64)
             if err != nil {
-                // Both items are a count, skip this line
-                continue
-            } else {
                 // Count, Item
                 cart = append(cart, CartLine{
-                    Item:  strings.TrimSpace(parts[1]),
+                    Item:  parts[1],
                     Count: count,
                 })
+            } else {
+                // Both items are a count, skip this line
+                continue
             }
         }
     }
