@@ -1,48 +1,58 @@
 package esc
 import (
-    "strconv"
-    "utf8"
     "errors"
+    "strconv"
+    "strings"
+    "unicode/utf8"
 )
 
-type cartLine struct {
+type CartLine struct {
     Item    string
-    Count   uint
+    Count   int64
 }
 
-func parseShoppingList(input string) ([]cartLine, error) {
-    var cart []cartLine
-    lines := string.Split(input, "\n")
+func parseShoppingList(input string) ([]CartLine, error) {
+    var cart []CartLine
+    lines := strings.Split(input, "\n")
     for _, line := range lines {
-        parts = string.FieldsFunc(line, func(cp rune) {
-            commaRune, _ = utf8.DecodeRune([]byte(","))
-            tabRune, _ = utf8.DecodeRune([]byte("\t"))
+        parts := strings.FieldsFunc(line, func(cp rune) bool {
+            commaRune, _ := utf8.DecodeRune([]byte(","))
+            tabRune, _ := utf8.DecodeRune([]byte("\t"))
             return cp == commaRune || cp == tabRune
         })
-        count, err = strconv.ParseInt(parts[0])
+        if len(parts) < 2 {
+            continue
+        }
+        count, err := strconv.ParseInt(parts[0], 10, 32)
         if err != nil {
             // First arg is not the count
-            count, err = strconv.ParseInt(parts[1])
+            count, err := strconv.ParseInt(parts[1], 10, 32)
             if err != nil {
                 // Neither arg is a count, skip this line
                 continue
             } else {
                 // Item, Count
-                cart.Add({
-                    Item:  string.Strip(parts[0]),
-                    Count: count
+                cart = append(cart, CartLine{
+                    Item:  strings.TrimSpace(parts[0]),
+                    Count: count,
                 })
             }
         } else {
-            // Count, Item
-            cart.Add({
-                Item:  string.Strip(parts[1]),
-                Count: count
-            })
+            _, err := strconv.ParseInt(parts[1], 10, 32)
+            if err != nil {
+                // Both items are a count, skip this line
+                continue
+            } else {
+                // Count, Item
+                cart = append(cart, CartLine{
+                    Item:  strings.TrimSpace(parts[1]),
+                    Count: count,
+                })
+            }
         }
     }
     if len(cart) == 0 {
-        return []cartLine, errors.New("No items found")
+        return cart, errors.New("No items found")
     }
-    return cart
+    return cart, nil
 }
