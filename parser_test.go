@@ -1,4 +1,4 @@
-package esc
+package main
 
 import (
     "fmt"

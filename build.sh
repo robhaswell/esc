@@ -1,2 +1,2 @@
-bin/rsrc -manifest esc.manifest -o rsrc.syso
+bin/rsrc -manifest main.manifest -o rsrc.syso
 go build -ldflags="-H windowsgui"

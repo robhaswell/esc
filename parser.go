@@ -1,4 +1,5 @@
-package esc
+package main
+
 import (
     "errors"
     "strconv"
