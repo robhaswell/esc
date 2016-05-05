@@ -1,3 +1,7 @@
+# !! DISCONTINUED
+
+I started this project the day before CCP announced import-from-clipboard support for this feature. It has now been discontinued.
+
 # EVE Shopping Cart
 EVE Online features a useful "multibuy" feature for letting you buy ship fittings in only a couple of clicks.
 Unfortunately CCP has not included a way to load arbitrary items into the "multibuy", meaning capsuleers must continue to purchase their material lists and other shopping needs manually.
